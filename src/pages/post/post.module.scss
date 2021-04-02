@@ -1,1 +1,57 @@
-// TODO
+.container {
+}
+
+.imgContainer {
+  width: 100%;
+
+  img {
+    width: 100%;
+  }
+}
+
+.postContainer {
+  max-width: 720px;
+  margin: 5rem auto;
+  padding: 0 2rem;
+
+  > strong {
+    display: block;
+    color: var(--heading);
+    font-size: 4rem;
+    font-weight: 700;
+    margin: 3rem 0;
+  }
+
+  > div {
+    margin-top: 1.5rem;
+  }
+
+  .postContent {
+    margin-top: 4rem;
+
+    h3 {
+      display: block;
+      color: var(--heading);
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 3rem 0;
+    }
+
+    strong {
+    }
+
+    p,
+    ul {
+      font-size: 1.125rem;
+      margin: 1.5rem 0;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+
+      li {
+        margin: 0.5rem 0;
+      }
+    }
+  }
+}

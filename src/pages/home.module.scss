@@ -1,1 +1,45 @@
-// TODO
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header {
+  margin: 4rem 0;
+}
+
+.posts {
+  a {
+    display: block;
+
+    & + a {
+      margin-top: 3rem;
+    }
+
+    &:hover .postTitle {
+      color: var(--highlight);
+    }
+
+    .postTitle {
+      display: block;
+      font-size: 1.75rem;
+      color: var(--heading);
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    .postSubtitle {
+      font-size: 1.125rem;
+      margin-bottom: 1.5rem;
+    }
+  }
+}
+
+.loadMoreButton {
+  color: var(--highlight);
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin: 4rem 0;
+  border: 0;
+  background: transparent;
+}
