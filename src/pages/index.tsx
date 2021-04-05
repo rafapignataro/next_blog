@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 
 import { getPrismicClient } from '../services/prismic';
+import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
@@ -31,12 +32,24 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ postsPagination }) => {
   const [nextPage, setNextPage] = useState(postsPagination.next_page);
-  const [posts, setPosts] = useState(postsPagination.results);
+  const [posts, setPosts] = useState(() =>
+    postsPagination.results.map(post => ({
+      ...post,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM yyyy',
+        {
+          locale: ptBR,
+        }
+      ),
+    }))
+  );
 
   useEffect(() => {
     if (!nextPage) return;
-
-    fetch(nextPage).then(response => response.json());
+    fetch(nextPage).then(response => {
+      response.json();
+    });
   }, [nextPage]);
 
   const handleLoadMore = async (): Promise<void> => {
@@ -75,7 +88,7 @@ const Home: React.FC<HomeProps> = ({ postsPagination }) => {
               <a>
                 <strong className={styles.postTitle}>{post.data.title}</strong>
                 <p className={styles.postSubtitle}>{post.data.subtitle}</p>
-                <div className={styles.postInfo}>
+                <div className={commonStyles.postInfo}>
                   <div>
                     <FiCalendar />
                     <p>{post.first_publication_date}</p>
@@ -113,21 +126,10 @@ export const getStaticProps: GetStaticProps = async () => {
     { fetch: ['post.title', 'post.content'], pageSize: 1 }
   );
 
-  const results = postsResponse.results.map(post => ({
-    ...post,
-    first_publication_date: format(
-      new Date(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
-  }));
-
   return {
     props: {
       postsPagination: {
-        results,
+        results: postsResponse.results,
         next_page: postsResponse.next_page,
       },
     },
