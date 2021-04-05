@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
@@ -15,6 +16,7 @@ import styles from './post.module.scss';
 
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -32,9 +34,10 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  preview: boolean;
 }
 
-const Post: React.FC<PostProps> = ({ post }) => {
+const Post: React.FC<PostProps> = ({ post, preview }) => {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -51,13 +54,19 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
   const timeToRead = Math.ceil(totalWords / 200);
 
-  const formatedDate = format(
+  const firstDateFormated = format(
     new Date(post.first_publication_date),
     'dd MMM yyyy',
     {
       locale: ptBR,
     }
   );
+
+  const lastDateFormated = post.last_publication_date
+    ? format(new Date(post.last_publication_date), "dd MMM yyyy, à's' k:m", {
+        locale: ptBR,
+      })
+    : null;
 
   return (
     <>
@@ -76,7 +85,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           <div className={commonStyles.postInfo}>
             <div>
               <FiCalendar />
-              <p>{formatedDate}</p>
+              <p>{firstDateFormated}</p>
             </div>
             <div>
               <FiUser />
@@ -87,6 +96,11 @@ const Post: React.FC<PostProps> = ({ post }) => {
               <p>{timeToRead} min</p>
             </div>
           </div>
+          {lastDateFormated && (
+            <div className={styles.lastEditDate}>
+              * editado em {lastDateFormated}
+            </div>
+          )}
           <div className={styles.postContent}>
             {post.data.content.map((content, contentIndex) => (
               // eslint-disable-next-line react/no-array-index-key
@@ -103,6 +117,13 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </div>
         </div>
       </main>
+      {preview && (
+        <aside className={commonStyles.previewContainer}>
+          <Link href="/api/exit-preview">
+            <a>Sair do modo Preview</a>
+          </Link>
+        </aside>
+      )}
     </>
   );
 };
@@ -127,15 +148,22 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData = {},
+}) => {
   const prismic = getPrismicClient();
   const { slug } = params;
 
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref || null,
+  });
 
   const post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     data: {
       title: response.data.title,
       subtitle: response.data.subtitle,
@@ -153,6 +181,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
     props: {
       post,
+      preview,
     },
     revalidate: 60,
   };
