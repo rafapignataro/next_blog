@@ -59,3 +59,45 @@
     }
   }
 }
+
+.hr {
+  max-width: 656px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: block;
+  background: rgba(215, 215, 215, 0.1);
+  height: 1px;
+}
+
+.pagination {
+  max-width: 720px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: end;
+
+  a {
+    max-width: 50%;
+    text-align: start;
+
+    h3 {
+      color: var(--heading);
+      font-weight: 400;
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      color: var(--highlight);
+      font-size: 1rem;
+      display: block;
+    }
+
+    > {
+      text-align: start;
+    }
+  }
+}

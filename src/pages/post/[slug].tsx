@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
+import { Comments } from '../../components/Comments';
 
 import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
@@ -34,10 +35,24 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  pagination: {
+    prevPost: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    } | null;
+    nextPost: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    } | null;
+  };
   preview: boolean;
 }
 
-const Post: React.FC<PostProps> = ({ post, preview }) => {
+const Post: React.FC<PostProps> = ({ post, pagination, preview }) => {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -116,6 +131,30 @@ const Post: React.FC<PostProps> = ({ post, preview }) => {
             ))}
           </div>
         </div>
+        <div className={styles.hr} />
+        {pagination && (
+          <div className={styles.pagination}>
+            {pagination.prevPost && (
+              <Link href={`/post/${pagination.prevPost.uid}`}>
+                <a className={styles.prevPost}>
+                  <h3>{pagination.prevPost.data.title}</h3>
+                  <strong>Post anterior</strong>
+                </a>
+              </Link>
+            )}
+            {pagination.nextPost && (
+              <Link href={`/post/${pagination.nextPost.uid}`}>
+                <a className={styles.nextPost}>
+                  <h3>{pagination.nextPost.data.title}</h3>
+                  <strong>Próximo Post</strong>
+                </a>
+              </Link>
+            )}
+          </div>
+        )}
+        <div className="utteranc">
+          <Comments />
+        </div>
       </main>
       {preview && (
         <aside className={commonStyles.previewContainer}>
@@ -160,6 +199,24 @@ export const getStaticProps: GetStaticProps = async ({
     ref: previewData?.ref || null,
   });
 
+  const prevPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'posts')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date]',
+    }
+  );
+
+  const nextPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'posts')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.last_publication_date desc]',
+    }
+  );
+
   const post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
@@ -178,10 +235,16 @@ export const getStaticProps: GetStaticProps = async ({
     },
   };
 
+  const pagination = {
+    prevPost: prevPost.results[0] ? prevPost.results[0] : null,
+    nextPost: nextPost.results[0] ? nextPost.results[0] : null,
+  };
+
   return {
     props: {
       post,
       preview,
+      pagination,
     },
     revalidate: 60,
   };
